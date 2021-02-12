@@ -9,73 +9,43 @@ import Foundation
 import CoreImage
 
 private func main(args: [String]){
-    
-    let semaphore = DispatchSemaphore(value: 0)
-    
-    // プロフィール情報取得
-    print("Process started.")
     let swifterClient = SwifterClient(credential: APIKey())
-    guard let userInfo = swifterClient.showUser(userTag: .screenName("EnchanLab")) else{
-        semaphore.signal()
-        return
-    }
     
-    // プロフ画像取得
-    print("Get profile image...")
-    guard let profileImageData = try? Data(contentsOf: URL(string: userInfo["profile_image_url_https"].string!.replacingOccurrences(of: "_normal", with: ""))!) else {
-        semaphore.signal()
-        return
-    }
-
-    // GitHubコントリビューション情報取得
-    let contributionXMLParser = ContributionXMLParser(userName: "Enchan1207")
-    do{
-        try contributionXMLParser?.fetchContributions(completion: { (contributions) in
-            // 生やす草の色を取得
-            print("Get grass color...")
-            guard let lastContribution = contributions.last else {
-                semaphore.signal()
-                return
-            }
-            let grassColor = GrassColor(rawValue: Int(lastContribution.level))
+    // ユーザオブジェクトを持ってきて
+    swifterClient.showUser(userTag: .screenName("EnchanLab")) { (json) in
+        guard let json = json else {return}
+        
+        // アイコン画像を取得し
+        guard
+            let iconImageURLString = json["profile_image_url_https"].string?.replacingOccurrences(of: "_normal", with: ""),
+            let iconImageURL = URL(string: iconImageURLString) else {return}
+        
+        guard let iconImageData = try? Data(contentsOf: iconImageURL),
+              let iconImage = CIImage(data: iconImageData) else{return}
+        
+        // GitHub Contribution Graphから今日の草の色を取得して
+        let parser = ContributionXMLParser(userName: "Enchan1207")
+        try? parser?.fetchContributions(completion: { (contributions) in
+            guard
+                let lastContributionLevel = contributions.last?.level,
+                let lastContributionLevelColor = GrassColor(rawValue: Int(lastContributionLevel))?.color else {return}
             
-            // フィルタをかける
-            print("Image processing...")
-            guard let ciImage = CIImage(data: profileImageData) else {
-                semaphore.signal()
-                return
-            }
-            guard let filter = ImageDrawer(ciImage: ciImage) else {
-                semaphore.signal()
-                return
-            }
-            
-            filter.generateCenterCircleFilteredImage(color: grassColor!.color!, radius: 190, thickness: 20) { (cgImage) in
+            // アイコン画像にフィルタをかけて
+            ImageDrawer(ciImage: iconImage)?.generateCenterCircleFilteredImage(color: lastContributionLevelColor, radius: 195, thickness: 25, completion: { (cgImage) in
+                
+                // Twitterに反映
                 if #available(OSX 10.13, *) {
-                    // PNGイメージ生成
-                    print("Generate PNG image...")
-                    guard let filteredImageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {
-                        semaphore.signal()
-                        return
-                    }
+                    guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
                     
-                    // アイコン更新
-                    print("Update icon...")
-                    guard let _ = swifterClient.updateProfileImage(imageData: filteredImageData) else {
-                        semaphore.signal()
-                        return
+                    swifterClient.updateProfileImage(imageData: imageData) { (json) in
+                        print(json)
+                        exit(EXIT_SUCCESS)
                     }
-                    
-                    print("All Process has been finished successfully!")
-                    semaphore.signal()
                 }
-            }
+            })
         })
-    }catch{
-        fatalError(error.localizedDescription)
     }
-    
-    semaphore.wait()
 }
 
 main(args: CommandLine.arguments)
+RunLoop.main.run()
