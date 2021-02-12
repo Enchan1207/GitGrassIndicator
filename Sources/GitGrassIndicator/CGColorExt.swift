@@ -17,7 +17,6 @@ extension CGColor {
         guard code.count == 6 else {return .clear}
         
         // 各色成分に分割し、CGFloatに変換
-        let indexes = (0..<3).map({code.index(code.startIndex, offsetBy: $0 * 2)})
         let splittedComponents =
             code // codeを
             .split(each: 2) // 2文字ずつ分割して

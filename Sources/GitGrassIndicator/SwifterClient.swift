@@ -16,20 +16,24 @@ class SwifterClient {
     }
     
     // ユーザオブジェクト取得
-    func showUser(userTag: UserTag, completion: @escaping (_ json: JSON?) -> Void){
+    func showUser(userTag: UserTag) -> JSON?{
+        let semaphore = DispatchSemaphore(value: 0)
+        var response: JSON? = nil
         swifter.showUser(userTag, includeEntities: true) { (json) in
-            completion(json)
-        } failure: { (error) in
-            completion(nil)
+            response = json
         }
+        semaphore.wait()
+        return response
     }
     
     // ユーザアイコン更新
-    func updateProfileImage(imageData: Data, completion: @escaping (_ json: JSON?) -> Void){
+    func updateProfileImage(imageData: Data) -> JSON?{
+        let semaphore = DispatchSemaphore(value: 0)
+        var response: JSON? = nil
         swifter.updateProfileImage(using: imageData, includeEntities: true, skipStatus: false) { (json) in
-            completion(json)
-        } failure: { (error) in
-            completion(nil)
+            response = json
         }
+        semaphore.wait()
+        return response
     }
 }

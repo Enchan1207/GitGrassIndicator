@@ -27,8 +27,6 @@ enum GrassColor: Int {
             return .fromHexCode("#10983D")
         case .Level4:
             return .fromHexCode("#27D545")
-        default:
-            return nil
         }
     }
 }
