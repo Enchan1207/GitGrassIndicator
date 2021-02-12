@@ -34,13 +34,12 @@ private func main(args: [String]){
             ImageDrawer(ciImage: iconImage)?.generateCenterCircleFilteredImage(color: lastContributionLevelColor, radius: 195, thickness: 25, completion: { (cgImage) in
                 
                 // Twitterに反映
-                if #available(OSX 10.13, *) {
-                    guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
-                    
-                    swifterClient.updateProfileImage(imageData: imageData) { (json) in
-                        print(json)
-                        exit(EXIT_SUCCESS)
-                    }
+                guard  #available(OSX 10.13, *) else{return}
+                guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
+                
+                swifterClient.updateProfileImage(imageData: imageData) { (json) in
+                    print(json)
+                    exit(EXIT_SUCCESS)
                 }
             })
         })
