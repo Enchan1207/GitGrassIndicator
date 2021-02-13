@@ -14,8 +14,10 @@ how it works:
 ## Opensource libraries
 
  - [mattdonnelly/Swifter](https://github.com/mattdonnelly/Swifter) - A Twitter framework for iOS & OS X written in Swift
- - [apple/swift-argument-parser](https://github.com/apple/swift-argument-parser) - Straightforward, type-safe argument parsing for Swift 
+ - [apple/swift-argument-parser](https://github.com/apple/swift-argument-parser) - Straightforward, type-safe argument parsing for Swift  
 
+Due to the update timing, it is possible that everything has not been listed here.
+See [Package.swift](blob/main/Package.swift) for the exact dependencies.
 ## License
 
 This repository is published under MIT License.  
