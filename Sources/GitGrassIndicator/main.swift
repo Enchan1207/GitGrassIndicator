@@ -7,36 +7,18 @@
 
 import Foundation
 import CoreImage
-import ArgumentParser
 import Swifter
 
-// 実行引数 GHActionsで実行する際に挿入できるように
-struct GitGrassIndicatorOptions: ParsableArguments {
-    @Argument() var consumerKey: String
-    @Argument() var consumerSecret: String
-    @Argument() var oauthToken: String
-    @Argument() var oauthSecret: String
-}
-
-private func main(args: [String]){
+private func main(arguments: [String]){
     print("Process started.")
     
     // 実行引数をもとにSwifterのインスタンスを生成
-    let options: GitGrassIndicatorOptions?
-    do {
-        options = try GitGrassIndicatorOptions.parse()
-    } catch {
-        print(GitGrassIndicatorOptions.helpMessage())
-        options = nil
-    }
-    
     let apikey: APIKey
-    if let options = options {
-        apikey = APIKey(consumerKey: options.consumerKey, consumerSecret: options.consumerSecret, oauthToken: options.oauthToken, oauthTokenSecret: options.oauthSecret)
+    if arguments.count == 5{
+        apikey = APIKey(consumerKey: arguments[1], consumerSecret: arguments[2], oauthToken: arguments[3], oauthTokenSecret: arguments[4])
     }else{
         apikey = APIKey()
     }
-    
     let swifter = Swifter(apikey: apikey)
     
     // ユーザオブジェクトを持ってきて
@@ -95,5 +77,5 @@ private func main(args: [String]){
     }
 }
 
-main(args: CommandLine.arguments)
+main(arguments: CommandLine.arguments)
 RunLoop.main.run()
