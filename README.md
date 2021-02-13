@@ -8,7 +8,7 @@
 Draw a contribution ring on the Twitter icon.  
 It'll be executed periodic (about every hours) by the `schedule`, feature of GitHub Actions.  
 
-how it works:
+how it works:  
 <img src="https://user-images.githubusercontent.com/51850597/107844306-9e0db880-6e15-11eb-8fb3-d0885f5b4731.png" width="400">
 
 ## Opensource libraries
