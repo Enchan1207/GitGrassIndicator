@@ -33,9 +33,11 @@ private func main(args: [String]){
     do {
         let options = try GitGrassIndicatorOptions.parse(args)
         apikey = APIKey(consumerKey: options.consumerKey, consumerSecret: options.consumerSecret, oauthToken: options.oauthToken, oauthTokenSecret: options.oauthSecret)
+        print("Valid arguments passed.")
     } catch {
         // 引数が正しく渡されなければ無視してデフォルトキーを使用
         apikey = APIKey()
+        print("Inalid arguments passed. use default.")
     }
     let swifter = Swifter(apikey: apikey)
     
