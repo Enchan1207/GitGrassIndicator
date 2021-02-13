@@ -7,11 +7,37 @@
 
 import Foundation
 import CoreImage
+import ArgumentParser
 import Swifter
+
+// 実行引数 GHActionsで実行する際に挿入できるように
+struct GitGrassIndicatorOptions: ParsableArguments {
+    @Option(help: ArgumentHelp("Twitter API Consumer Key.", valueName: "key"))
+    var consumerKey: String = ""
+    
+    @Option(help: ArgumentHelp("Twitter API Consumer Secret.", valueName: "secret"))
+    var consumerSecret: String = ""
+    
+    @Option(help: ArgumentHelp("Twitter API Oauth token.", valueName: "token"))
+    var oauthToken: String = ""
+    
+    @Option(help: ArgumentHelp("Twitter API Oauth Secret.", valueName: "secret"))
+    var oauthSecret: String = ""
+}
 
 private func main(args: [String]){
     print("Process started.")
-    let swifter = Swifter(credential: APIKey())
+    
+    // 実行引数をもとにSwifterのインスタンスを生成
+    let apikey: APIKey
+    do {
+        let options = try GitGrassIndicatorOptions.parse(args)
+        apikey = APIKey(consumerKey: options.consumerKey, consumerSecret: options.consumerSecret, oauthToken: options.oauthToken, oauthTokenSecret: options.oauthSecret)
+    } catch {
+        // 引数が正しく渡されなければ無視してデフォルトキーを使用
+        apikey = APIKey()
+    }
+    let swifter = Swifter(apikey: apikey)
     
     // ユーザオブジェクトを持ってきて
     print("Fetch user object...")
@@ -47,8 +73,8 @@ private func main(args: [String]){
                 guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
                 
                 // (ファイルに投げる場合はこう)
-//                try? imageData.write(to: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/ccc.png"))
-//                exit(EXIT_SUCCESS)
+                //                try? imageData.write(to: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/ccc.png"))
+                //                exit(EXIT_SUCCESS)
                 
                 swifter.updateProfileImage(using: imageData) { (json) in
                     print("Success!")
@@ -59,7 +85,7 @@ private func main(args: [String]){
                     print(error.localizedDescription)
                     exit(EXIT_FAILURE)
                 }
-
+                
             })
         })
     } failure: { (error) in
