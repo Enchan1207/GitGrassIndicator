@@ -17,8 +17,8 @@ how it works:
  - [apple/swift-argument-parser](https://github.com/apple/swift-argument-parser) - Straightforward, type-safe argument parsing for Swift  
 
 Due to the update timing, it is possible that everything has not been listed here.
-See [Package.swift](blob/main/Package.swift) for the exact dependencies.
+See [Package.swift](Package.swift) for the exact dependencies.
 ## License
 
 This repository is published under MIT License.  
-In details, see [LICENSE](blob/main/LICENSE).  
+In details, see [LICENSE](LICENSE).  
