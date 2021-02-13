@@ -12,33 +12,31 @@ import Swifter
 
 // 実行引数 GHActionsで実行する際に挿入できるように
 struct GitGrassIndicatorOptions: ParsableArguments {
-    @Option(help: ArgumentHelp("Twitter API Consumer Key.", valueName: "key"))
-    var consumerKey: String = ""
-    
-    @Option(help: ArgumentHelp("Twitter API Consumer Secret.", valueName: "secret"))
-    var consumerSecret: String = ""
-    
-    @Option(help: ArgumentHelp("Twitter API Oauth token.", valueName: "token"))
-    var oauthToken: String = ""
-    
-    @Option(help: ArgumentHelp("Twitter API Oauth Secret.", valueName: "secret"))
-    var oauthSecret: String = ""
+    @Argument() var consumerKey: String
+    @Argument() var consumerSecret: String
+    @Argument() var oauthToken: String
+    @Argument() var oauthSecret: String
 }
 
 private func main(args: [String]){
     print("Process started.")
     
     // 実行引数をもとにSwifterのインスタンスを生成
-    let apikey: APIKey
+    let options: GitGrassIndicatorOptions?
     do {
-        let options = try GitGrassIndicatorOptions.parse(args)
-        apikey = APIKey(consumerKey: options.consumerKey, consumerSecret: options.consumerSecret, oauthToken: options.oauthToken, oauthTokenSecret: options.oauthSecret)
-        print("Valid arguments passed.")
+        options = try GitGrassIndicatorOptions.parse()
     } catch {
-        // 引数が正しく渡されなければ無視してデフォルトキーを使用
-        apikey = APIKey()
-        print("Inalid arguments passed. use default.")
+        print(GitGrassIndicatorOptions.helpMessage())
+        options = nil
     }
+    
+    let apikey: APIKey
+    if let options = options {
+        apikey = APIKey(consumerKey: options.consumerKey, consumerSecret: options.consumerSecret, oauthToken: options.oauthToken, oauthTokenSecret: options.oauthSecret)
+    }else{
+        apikey = APIKey()
+    }
+    
     let swifter = Swifter(apikey: apikey)
     
     // ユーザオブジェクトを持ってきて

@@ -24,4 +24,4 @@ jobs:
         TWITTER_OAUTH_TOKEN: ${{ secrets.TWITTER_OAUTH_TOKEN }}
         TWITTER_OAUTH_SECRET: ${{ secrets.TWITTER_OAUTH_SECRET }}
 
-      run: swift run GitGrassIndicator --consumer-key ${TWITTER_CONSUMER_KEY} --consumer-secret ${TWITTER_CONSUMER_SECRET} --oauth-token ${TWITTER_OAUTH_TOKEN} --oauth-secret ${TWITTER_OAUTH_SECRET}
+      run: swift run GitGrassIndicator ${TWITTER_CONSUMER_KEY} ${TWITTER_CONSUMER_SECRET} ${TWITTER_OAUTH_TOKEN} ${TWITTER_OAUTH_SECRET}
