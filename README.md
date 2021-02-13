@@ -18,5 +18,5 @@ how it works:
 
 ## License
 
-This repository is published under MIT Licence.  
-In details, see [LICENSE](/Enchan1207/GitGrassIndicator/blob/main/LICENSE).  
+This repository is published under MIT License.  
+In details, see [LICENSE](blob/main/LICENSE).  
