@@ -7,16 +7,15 @@
 
 import Foundation
 import CoreImage
+import Swifter
 
 private func main(args: [String]){
     print("Process started.")
-    let swifterClient = SwifterClient(credential: APIKey())
+    let swifter = Swifter(credential: APIKey())
     
     // ユーザオブジェクトを持ってきて
     print("Fetch user object...")
-    swifterClient.showUser(userTag: .screenName("EnchanLab")) { (json) in
-        guard let json = json else {return}
-        
+    swifter.showUser(.screenName("EnchanLab"), includeEntities: true) { (json) in
         // アイコン画像を取得し
         print("Get icon image...")
         guard
@@ -51,13 +50,22 @@ private func main(args: [String]){
 //                try? imageData.write(to: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/ccc.png"))
 //                exit(EXIT_SUCCESS)
                 
-                swifterClient.updateProfileImage(imageData: imageData) { (json) in
+                swifter.updateProfileImage(using: imageData) { (json) in
                     print("Success!")
                     print(json)
                     exit(EXIT_SUCCESS)
+                } failure: { (error) in
+                    print("Failed.")
+                    print(error.localizedDescription)
+                    exit(EXIT_FAILURE)
                 }
+
             })
         })
+    } failure: { (error) in
+        print("Failed.")
+        print(error.localizedDescription)
+        exit(EXIT_FAILURE)
     }
 }
 
