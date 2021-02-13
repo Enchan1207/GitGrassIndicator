@@ -3,7 +3,7 @@ name: Periodic update
 
 on:
   schedule:
-    - cron: '0 * * * *' # 毎時 
+    - cron: '0 0 * * *'
 
   push:
     branches: [ main ]
