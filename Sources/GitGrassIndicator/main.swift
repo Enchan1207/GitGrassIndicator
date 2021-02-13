@@ -20,13 +20,14 @@ private func main(args: [String]){
     print("Drawing...")
     let drawer = ImageDrawer(cgImage: cgImage)
     drawer.apply { (context) in
-        // 画像処理
+        // 円を描く
         let imageRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
         context.draw(cgImage, in: imageRect)
         
-        let clipPath = CGPath(ellipseIn: imageRect, transform: nil)
+        let diff: CGFloat = 10.0
+        let clipPath = CGPath(ellipseIn: CGRect(x: diff, y: diff, width: imageRect.width - diff * 2, height: imageRect.height - diff * 2), transform: nil)
         context.saveGState()
-        context.setLineWidth(imageRect.width / 20)
+        context.setLineWidth(20)
         context.addPath(clipPath)
         context.replacePathWithStrokedPath()
         context.clip()
