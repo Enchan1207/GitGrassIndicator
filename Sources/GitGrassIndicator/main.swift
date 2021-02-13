@@ -9,40 +9,48 @@ import Foundation
 import CoreImage
 
 private func main(args: [String]){
-    let swifterClient = SwifterClient(credential: APIKey())
+    // 画像を持ってきて
+    let ciContext = CIContext()
+    print("call image from assets...")
+        guard #available(OSX 10.12, *),
+              let ciImage = CIImage(contentsOf: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/icon.jpg")),
+              let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {return}
     
-    // ユーザオブジェクトを持ってきて
-    swifterClient.showUser(userTag: .screenName("EnchanLab")) { (json) in
-        guard let json = json else {return}
+    // Drawerにつっこみ
+    print("Drawing...")
+    let drawer = ImageDrawer(cgImage: cgImage)
+    drawer.apply { (context) in
+        // 画像処理
+        let imageRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+        context.draw(cgImage, in: imageRect)
         
-        // アイコン画像を取得し
-        guard
-            let iconImageURLString = json["profile_image_url_https"].string?.replacingOccurrences(of: "_normal", with: ""),
-            let iconImageURL = URL(string: iconImageURLString) else {return}
+        let clipPath = CGPath(ellipseIn: imageRect, transform: nil)
+        context.saveGState()
+        context.setLineWidth(imageRect.width / 20)
+        context.addPath(clipPath)
+        context.replacePathWithStrokedPath()
+        context.clip()
         
-        guard let iconImageData = try? Data(contentsOf: iconImageURL),
-              let iconImage = CIImage(data: iconImageData) else{return}
+        // グラデ
+        let colors: [CGColor] = [
+            .fromHexCode("#FF0000"),
+            .fromHexCode("#00FF00"),
+        ]
+        let offsets = [ CGFloat(0.0), CGFloat(1.0) ]
+        let grad = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: offsets)
+        let start = imageRect.origin
+        let end = CGPoint(x: imageRect.maxX, y: imageRect.maxY)
+        context.drawLinearGradient(grad!, start: start, end: end, options: [])
+
+        context.restoreGState()
         
-        // GitHub Contribution Graphから今日の草の色を取得して
-        let parser = ContributionXMLParser(userName: "Enchan1207")
-        try? parser?.fetchContributions(completion: { (contributions) in
-            guard
-                let lastContributionLevel = contributions.last?.level,
-                let lastContributionLevelColor = GrassColor(rawValue: Int(lastContributionLevel))?.color else {return}
-            
-            // アイコン画像にフィルタをかけて
-            ImageDrawer(ciImage: iconImage)?.generateCenterCircleFilteredImage(color: lastContributionLevelColor, radius: 195, thickness: 25, completion: { (cgImage) in
-                
-                // Twitterに反映
-                guard  #available(OSX 10.13, *) else{return}
-                guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
-                
-                swifterClient.updateProfileImage(imageData: imageData) { (json) in
-                    print(json)
-                    exit(EXIT_SUCCESS)
-                }
-            })
-        })
+    } completion: { (image) in
+        // 保存
+        print("save...")
+        guard #available(OSX 10.13, *) else{return}
+        let filteredImageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: image!))
+        try? filteredImageData?.write(to: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/filtered.png"))
+        exit(EXIT_SUCCESS)
     }
 }
 

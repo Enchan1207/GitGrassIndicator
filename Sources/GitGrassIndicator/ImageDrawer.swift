@@ -41,9 +41,12 @@ class ImageDrawer {
     }
     
     // contextに任意の処理を加える
-    func apply(process: (_ context:CGContext) -> Void){
+    func apply(
+        process: (_ context:CGContext)->Void,
+        completion: ((_ image:CGImage?)->Void)? = nil){
         if let cgContext = self.cgContext{
             process(cgContext)
+            completion?(generateImageFromContext())
         }
     }
     
