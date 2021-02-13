@@ -1,16 +1,15 @@
-# This is a basic workflow that is manually triggered
-
-name: Manual workflow
+# 定期更新ワークフロー
+name: Periodic update workflow
 
 on:
   schedule:
-    - cron:  '0 * * * *'
+    - cron: '0 * * * *' # 毎時 
 
 jobs:
   build:
 
     runs-on: macos-latest
-
+    
     steps:
     - uses: actions/checkout@v2
     - name: Build
