@@ -15,7 +15,22 @@ enum GrassColor: Int {
     case Level3 = 3
     case Level4 = 4
     
-    var color: CGColor? {
+    var lightAppearanceColor: CGColor? {
+        switch self {
+        case .Level0:
+            return .fromHexCode("#EBEDF0")
+        case .Level1:
+            return .fromHexCode("#9BE9A8")
+        case .Level2:
+            return .fromHexCode("#40C463")
+        case .Level3:
+            return .fromHexCode("#30A14E")
+        case .Level4:
+            return .fromHexCode("#216E39")
+        }
+    }
+    
+    var darkAppearanceColor: CGColor? {
         switch self {
         case .Level0:
             return .fromHexCode("#161B22")

@@ -53,17 +53,33 @@ class ImageDrawer {
     }
     
     // 画像生成
-    func generateCenterCircleFilteredImage(color: CGColor, radius: CGFloat, thickness: CGFloat, completion: (_ image: CGImage?) -> Void){
+    func generateCenterCircleFilteredImage(colors: [CGColor], radius: CGFloat, thickness: CGFloat, completion: (_ image: CGImage?) -> Void){
         
         self.apply { (context) in
-            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-            
-            context.setLineWidth(thickness)
-            context.setStrokeColor(color)
-            
+            // CGImageを描いて
+            let imageRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+            context.draw(cgImage, in: imageRect)
+                
+            // 円を描く
             let origin = CGPoint(x: cgImage.width / 2, y: cgImage.height / 2)
             let ellipseRect = CGRect(x: origin.x - radius, y: origin.y - radius, width: radius * 2, height: radius * 2)
-            context.strokeEllipse(in: ellipseRect)
+            let clipPath = CGPath(ellipseIn: ellipseRect, transform: nil)
+            context.saveGState()
+            context.setLineWidth(thickness)
+            context.addPath(clipPath)
+            context.replacePathWithStrokedPath()
+            context.clip()
+            
+            // グラデ
+            let offsets = [ CGFloat(0.0), CGFloat(1.0) ]
+            let grad = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: offsets)
+            
+            let start = CGPoint(x: imageRect.minX, y: imageRect.minY)
+            let end = CGPoint(x: imageRect.maxX, y: imageRect.maxY)
+            
+            context.drawLinearGradient(grad!, start: start, end: end, options: [])
+            
+            context.restoreGState()
             
             completion(self.generateImageFromContext())
         }
