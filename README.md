@@ -1,4 +1,4 @@
-# GitGrassIndicator
+![GitGrass Indicator](banner.svg)]  
 
 ![](https://img.shields.io/badge/Language-Swift-FA7343?logo=swift)
 [![](https://github.com/Enchan1207/GitGrassIndicator/workflows/Periodic%20update%20workflow/badge.svg)](https://github.com/Enchan1207/GitGrassIndicator/actions)

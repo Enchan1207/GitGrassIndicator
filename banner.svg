@@ -1,0 +1,22 @@
+<!-- SVG手打ち芸人 -->
+<svg width="400" height="160" viewBox="0 0 400 160">
+    <!-- リポジトリ名のグラデ設定 -->
+    <defs>
+        <linearGradient id="gradient" x1="0" y1="100%" x2="100%" y2="0">
+            <stop stop-color="#216e39" offset="0%"/>
+            <stop stop-color="#27d545" offset="100%"/>
+        </linearGradient>
+    </defs>
+
+    <!-- 画像を丸く切り取るためのclipPath -->
+    <clipPath id="clipCircle">
+        <circle r="60" cx="80" cy="80"/>
+    </clipPath>
+    <image href="https://user-images.githubusercontent.com/51850597/107865485-5422e200-6eaa-11eb-8123-62f0f1c5200b.png" width="120" height="120" x="20" y="20" clip-path="url(#clipCircle)"/>
+
+    <!-- リポジトリ名 -->
+    <text fill="url(#gradient)" y="25" font-family="SF Pro Text, Arial">
+        <tspan font-size="50" x="150" dy="50">Git Grass</tspan>
+        <tspan font-size="50" x="150" dy="50">Indicator</tspan>
+    </text>
+</svg>
