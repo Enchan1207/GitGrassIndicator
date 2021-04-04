@@ -9,73 +9,70 @@ import Foundation
 import CoreImage
 import Swifter
 
-private func main(arguments: [String]){
-    print("Process started.")
-    
-    // 実行引数をもとにSwifterのインスタンスを生成
-    let apikey: APIKey
-    if arguments.count == 5{
-        apikey = APIKey(consumerKey: arguments[1], consumerSecret: arguments[2], oauthToken: arguments[3], oauthTokenSecret: arguments[4])
-    }else{
-        apikey = APIKey()
-    }
-    let swifter = Swifter(apikey: apikey)
-    
-    // ユーザオブジェクトを持ってきて
-    print("Fetch user object...")
-    swifter.showUser(.screenName("EnchanLab"), includeEntities: true) { (json) in
-        // アイコン画像を取得し
-        print("Get icon image...")
-        guard
-            let iconImageURLString = json["profile_image_url_https"].string?.replacingOccurrences(of: "_normal", with: ""),
-            let iconImageURL = URL(string: iconImageURLString) else {return}
-        
-        guard let iconImageData = try? Data(contentsOf: iconImageURL),
-              let iconImage = CIImage(data: iconImageData) else{return}
-        
-        // GitHub Contribution Graphから今日の草の色を取得して
-        print("Fetch last contribution...")
-        let parser = ContributionXMLParser(userName: "Enchan1207")
-        try? parser?.fetchContributions(completion: { (contributions) in
-            guard
-                let lastContributionLevel = contributions.last?.level,
-                let lastContributionLevelColor = GrassColor(rawValue: Int(lastContributionLevel)) else {return}
-            
-            // アイコン画像にフィルタをかけて
-            print("Image filtering...")
-            let colors: [CGColor] = [
-                lastContributionLevelColor.lightAppearanceColor!,
-                lastContributionLevelColor.darkAppearanceColor!
-            ]
-            ImageDrawer(ciImage: iconImage)?.generateCenterCircleFilteredImage(colors: colors, radius: 195, thickness: 25, completion: { (cgImage) in
-                
-                // Twitterに反映
-                print("Icon update...")
-                guard  #available(OSX 10.13, *) else{return}
-                guard let imageData = ImageFormatter().generatePNGImageData(image: CIImage(cgImage: cgImage!)) else {return}
-                
-                // (ファイルに投げる場合はこう)
-                //                try? imageData.write(to: URL(fileURLWithPath: "\(NSHomeDirectory())/Desktop/ccc.png"))
-                //                exit(EXIT_SUCCESS)
-                
-                swifter.updateProfileImage(using: imageData) { (json) in
-                    print("Success!")
-                    print(json)
-                    exit(EXIT_SUCCESS)
-                } failure: { (error) in
-                    print("Failed.")
-                    print(error.localizedDescription)
-                    exit(EXIT_FAILURE)
-                }
-                
-            })
-        })
-    } failure: { (error) in
-        print("Failed.")
-        print(error.localizedDescription)
-        exit(EXIT_FAILURE)
-    }
+// 実行引数をもとにSwifterのインスタンスを生成
+let apikey: APIKey
+let arguments = CommandLine.arguments
+if arguments.count == 5{
+    apikey = APIKey(consumerKey: arguments[1], consumerSecret: arguments[2], oauthToken: arguments[3], oauthTokenSecret: arguments[4])
+}else{
+    apikey = APIKey()
+}
+let swifter = Swifter(apikey: apikey)
+
+// セマンティウス2世
+let sema = DispatchSemaphore(value: 0)
+
+DispatchQueue.main.async {
+    print("ここは動かねえだろ!")
 }
 
-main(arguments: CommandLine.arguments)
-RunLoop.main.run()
+DispatchQueue.global(qos: .utility).async {
+    print("Waiting...")
+    sema.wait()
+    sema.wait()
+    sema.wait()
+    sema.wait()
+    exit(EXIT_SUCCESS)
+}
+
+DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 2) {
+    print("Signal 1!")
+    sema.signal()
+}
+
+DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 4) {
+    print("Signal 2!")
+    sema.signal()
+}
+
+DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 6) {
+    let urlSessionSema = DispatchSemaphore(value: 0)
+    URLSession.shared.dataTask(with: URL(string: "https://example.com")!) { (data, response, error) in
+        guard let data = data else {
+            urlSessionSema.signal()
+            return
+        }
+        print(String(data: data, encoding: .utf8)!)
+        urlSessionSema.signal()
+    }.resume()
+    urlSessionSema.wait()
+    
+    print("Signal 3!")
+    sema.signal()
+}
+
+DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 8) {
+    let swifterSema = DispatchSemaphore(value: 0)
+    swifter.showUser(.screenName("EnchanLab"), includeEntities: true) { (json) in
+        print(json)
+        swifterSema.signal()
+    } failure: { (error) in
+        print(error)
+        swifterSema.signal()
+    }
+    RunLoop.current.run()
+    swifterSema.wait()
+    sema.signal()
+}
+
+dispatchMain()
