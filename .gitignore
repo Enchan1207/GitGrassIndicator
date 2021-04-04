@@ -3,5 +3,5 @@
 /Packages
 /*.xcodeproj
 xcuserdata/
-APIKey.swift
+**/APIKey.swift
 *.resolved
