@@ -9,70 +9,42 @@ import Foundation
 import CoreImage
 import Swifter
 
-// 実行引数をもとにSwifterのインスタンスを生成
-let apikey: APIKey
-let arguments = CommandLine.arguments
-if arguments.count == 5{
-    apikey = APIKey(consumerKey: arguments[1], consumerSecret: arguments[2], oauthToken: arguments[3], oauthTokenSecret: arguments[4])
-}else{
-    apikey = APIKey()
-}
-let swifter = Swifter(apikey: apikey)
 
-// セマンティウス2世
-let sema = DispatchSemaphore(value: 0)
-
-DispatchQueue.main.async {
-    print("ここは動かねえだろ!")
-}
-
-DispatchQueue.global(qos: .utility).async {
-    print("Waiting...")
-    sema.wait()
-    sema.wait()
-    sema.wait()
-    sema.wait()
-    exit(EXIT_SUCCESS)
-}
-
-DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 2) {
-    print("Signal 1!")
-    sema.signal()
-}
-
-DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 4) {
-    print("Signal 2!")
-    sema.signal()
-}
-
-DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 6) {
-    let urlSessionSema = DispatchSemaphore(value: 0)
-    URLSession.shared.dataTask(with: URL(string: "https://example.com")!) { (data, response, error) in
-        guard let data = data else {
-            urlSessionSema.signal()
-            return
-        }
-        print(String(data: data, encoding: .utf8)!)
-        urlSessionSema.signal()
-    }.resume()
-    urlSessionSema.wait()
+func main(arguments: [String]) -> Int32 {
+    // 実行引数をもとにSwifterのインスタンスを生成
+    let apikey: APIKey
     
-    print("Signal 3!")
-    sema.signal()
-}
-
-DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 8) {
-    let swifterSema = DispatchSemaphore(value: 0)
+    if arguments.count == 5{
+        apikey = APIKey(consumerKey: arguments[1], consumerSecret: arguments[2], oauthToken: arguments[3], oauthTokenSecret: arguments[4])
+    }else{
+        apikey = APIKey()
+    }
+    let swifter = Swifter(apikey: apikey)
+    
+    // セマンティウス2世
+    let sema = DispatchSemaphore(value: 0)
+    
+    var username: String?
     swifter.showUser(.screenName("EnchanLab"), includeEntities: true) { (json) in
-        print(json)
-        swifterSema.signal()
+        username = "\(json["name"].string ?? "User") (@\(json["screen_name"].string ?? "User"))"
+        sema.signal()
     } failure: { (error) in
         print(error)
-        swifterSema.signal()
+        sema.signal()
     }
-    RunLoop.current.run()
-    swifterSema.wait()
-    sema.signal()
+    sema.wait()
+    
+    guard username != nil else {return EXIT_FAILURE}
+    
+    print(username!)
+    
+    return EXIT_SUCCESS
+}
+
+let arguments = CommandLine.arguments
+DispatchQueue.global(qos: .userInteractive).async {
+    let result = main(arguments: arguments)
+    exit(result)
 }
 
 dispatchMain()
