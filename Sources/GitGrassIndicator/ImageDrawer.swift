@@ -52,7 +52,10 @@ class ImageDrawer {
         return self.cgContext?.makeImage()
     }
     
-    // 画像生成
+}
+
+extension ImageDrawer{
+    // contributionリングの描画
     func generateCenterCircleFilteredImage(colors: [CGColor], radius: CGFloat, thickness: CGFloat, completion: (_ image: CGImage?) -> Void){
         
         self.apply { (context) in
